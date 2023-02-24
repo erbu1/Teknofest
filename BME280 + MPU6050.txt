@@ -1,0 +1,167 @@
+
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+#include <MPU6050_light.h>
+#define SEALEVELPRESSURE_HPA (1013.25)
+MPU6050 mpu(Wire);
+Adafruit_BME280 bme;
+long timer = 0;
+float ilk =0;
+float maxirtifa = 0;
+
+void setup() {
+    Serial.begin(9600);
+   Wire.begin();
+    byte status = mpu.begin();
+  Serial.print(F("MPU6050 durumu: "));
+  Serial.println(status);
+  while(status!=0){Serial.println(F("bağlantı kurulamadı")); } //  MPU6050ye bağlanmazsa herşey dursun
+  
+  Serial.println(F("kalibre ediliyor sabit tut"));
+  delay(1400);
+  mpu.calcOffsets(true,true); // hız ve ivme
+  Serial.println("tamamdır!\n");
+  if (!bme.begin(0x76)) //bme den veri yoksa devam etme
+  {
+    Serial.println("BMEye baglanamadı");
+    while (1);
+  }
+ 
+ 
+ kontrol();//kompenentleri kontrol eder
+
+
+  
+ 
+  ilk = ilkyuk();
+
+ digitalWrite(5,LOW);
+
+ 
+ }
+
+void loop() {  
+ 
+  float sicaklik =( bme.readTemperature()+ mpu.getTemp())/2; 
+  float basinc = bme.readPressure() / 100.0F;
+  float mesafe = bme.readAltitude(SEALEVELPRESSURE_HPA);
+  float nem = bme.readHumidity();
+  float irtifa = bme.readAltitude(SEALEVELPRESSURE_HPA)-ilk;
+  
+  if (irtifa > maxirtifa) // anlık irtifa max irtifadan büyükse veriyi kaydet
+  {
+    maxirtifa = irtifa;
+    digitalWrite(5,HIGH);
+    delay(100);
+    digitalWrite(5,LOW);
+    }
+    
+  if (maxirtifa - irtifa > 1) // max irtifa ile anlık irtifa arasında 1 m fazla mesafe varsa buzzer çalıştır.
+  {
+     digitalWrite(10,HIGH);
+     delay(100);
+     digitalWrite(10,LOW);
+     }
+      
+     
+     
+      //************ led koşulları*****************
+  if (mpu.getAngleX()>= 8 &&  mpu.getAngleX()<= 95){
+      digitalWrite(6,HIGH);
+      }
+      else digitalWrite(6,LOW);
+      
+      if (mpu.getAngleX()<= -8 &&  mpu.getAngleX()>= -95){
+      digitalWrite(7,HIGH);
+      }
+      else digitalWrite(7,LOW);
+      
+      if (mpu.getAngleY()<= -8 &&  mpu.getAngleY()>= -95){
+      digitalWrite(8,HIGH);
+      }
+      else digitalWrite(8,LOW);
+      if (mpu.getAngleY()>= 8 &&  mpu.getAngleY()<= 95){
+      digitalWrite(9,HIGH);
+      }
+      else digitalWrite(9,LOW);
+  mpu.update();
+
+   
+   Serial.print("\tSıcaklık: ");Serial.print(sicaklik); 
+   Serial.print(F("\tX: "));Serial.print(mpu.getAngleX());
+   Serial.print("\tY: ");Serial.print(mpu.getAngleY());
+   Serial.print("\tZ: ");Serial.print(mpu.getAngleZ());
+   Serial.print(F("Hız      X: "));Serial.print(mpu.getGyroX());
+   Serial.print("\tY: ");Serial.print(mpu.getGyroY());
+   Serial.print("\tZ: ");Serial.print(mpu.getGyroZ());
+   Serial.print("\tİrtifa: ");Serial.print(irtifa);
+   Serial.print("\tMax İrtifa: ");Serial.println(maxirtifa);
+   }
+float ilkyuk() // başlangıç verisini hesapla
+{
+
+  return bme.readAltitude(SEALEVELPRESSURE_HPA);
+  }
+  void kontrol(){
+     pinMode(5,OUTPUT);
+  pinMode(6,OUTPUT);
+  pinMode(7,OUTPUT);
+  pinMode(8,OUTPUT);
+  pinMode(9,OUTPUT);
+  pinMode(10,OUTPUT);
+  digitalWrite(5,HIGH);
+  digitalWrite(10,HIGH);
+  digitalWrite(6,HIGH);
+  delay(100);
+  digitalWrite(6,LOW);
+  digitalWrite(8,HIGH);
+  delay(100);
+  digitalWrite(8,LOW);
+  digitalWrite(7,HIGH);
+  delay(100);
+  digitalWrite(7,LOW);
+  digitalWrite(9,HIGH);
+  delay(100);
+  digitalWrite(9,LOW);
+  digitalWrite(6,HIGH);
+  digitalWrite(7,HIGH);
+  digitalWrite(8,HIGH);
+  digitalWrite(9,HIGH);
+  delay(100);
+  digitalWrite(6,LOW);
+  digitalWrite(7,LOW);
+  digitalWrite(8,LOW);
+  digitalWrite(9,LOW);
+  delay(100);
+  digitalWrite(6,HIGH);
+  digitalWrite(7,HIGH);
+  digitalWrite(8,HIGH);
+  digitalWrite(9,HIGH);
+   delay(100);
+  digitalWrite(6,LOW);
+  digitalWrite(7,LOW);
+  digitalWrite(8,LOW);
+  digitalWrite(9,LOW);
+  delay(100);
+  digitalWrite(6,HIGH);
+  digitalWrite(7,HIGH);
+  digitalWrite(8,HIGH);
+  digitalWrite(9,HIGH);
+  delay(100);
+  digitalWrite(6,LOW);
+  digitalWrite(7,LOW);
+  digitalWrite(8,LOW);
+  digitalWrite(9,LOW);
+  delay(100);
+  digitalWrite(6,HIGH);
+  digitalWrite(7,HIGH);
+  digitalWrite(8,HIGH);
+  digitalWrite(9,HIGH);
+  delay(100);
+  digitalWrite(6,LOW);
+  digitalWrite(7,LOW);
+  digitalWrite(8,LOW);
+  digitalWrite(9,LOW);
+  digitalWrite(6,LOW);
+  digitalWrite(10,LOW);}
